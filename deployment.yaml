@@ -16,6 +16,6 @@ spec:
     spec:
       containers:
       - name: my-app-container
-        image: 730335492406.dkr.ecr.ap-south-1.amazonaws.com/k8_deployment:latest 
+        image: 730335492406.dkr.ecr.ap-south-1.amazonaws.com/k8_deployment: 
         ports:
         - containerPort: 80
