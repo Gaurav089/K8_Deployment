@@ -1,0 +1,37 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    docker.build("myapp:${env.BUILD_ID}")  // Tagging the Docker image with Jenkins build ID
+                    docker.image("myapp:${env.BUILD_ID}").push('730335492406.dkr.ecr.ap-south-1.amazonaws.com/k8_deployment')
+                }
+            }
+        }
+
+        stage('Deploy to EKS') {
+            steps {
+                script {
+                    // Authenticate with ECR
+                    withAWS(credentials: 'ecr-credentials', region: 'ap-south-1') {
+                        sh 'aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 730335492406.dkr.ecr.ap-south-1.amazonaws.com'
+                    }
+                    
+                    // Update Kubernetes deployment
+                    sh 'kubectl set image deployment/myapp-deployment myapp=myapp:${env.BUILD_ID}'
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Deployment successful!'
+        }
+        failure {
+            echo 'Deployment failed!'
+        }
+    }
+}
